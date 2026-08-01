@@ -223,9 +223,10 @@
     <div class="bar-row-actions">
       <button class="btn primary email-btn" style="background:#2d5a27;color:#fff;font-weight:700;" onclick="emailJson()">✉ שליחה במייל (torzt@post.bgu.ac.il)</button>
       <button class="btn ghost" onclick="doAutosave()">💾 שמירה</button>
-      <button class="btn ghost" onclick="exportCsv()">📊 ייצוא לאקסל</button>
+      <button class="btn ghost" onclick="exportCsv()">📊 ייצוא לאקסל (CSV)</button>
+      <button class="btn ghost" onclick="exportJson()">📄 ייצוא קובץ JSON</button>
       <input type="file" id="importFile" accept=".json" style="display:none" onchange="importJson(event)">
-      <button class="btn ghost" onclick="document.getElementById('importFile').click()">📂 ייבוא</button>
+      <button class="btn ghost" onclick="document.getElementById('importFile').click()">📂 טעינת JSON</button>
     </div>
   </div>
 </footer>
@@ -817,32 +818,20 @@ function emailJson(){
   recomputeAllDerived();
   showToast('שולח נתונים במייל ל-torzt@post.bgu.ac.il...');
   
-  var plotId = state.plot_id || 'טיוטה';
-  var growerName = state.grower.name || 'לא צוין';
-  var farmName = state.grower.farm_name || 'לא צוין';
+  var plotId = state.plot_id || 'טרם הוזן';
+  var growerName = state.grower.name || 'טרם הוזן';
   
   var payload = {
-    access_key: "c8c4a161-0428-48be-8178-654cb6c5c1cb", // Web3Forms public API endpoint for torzt@post.bgu.ac.il
+    access_key: "c8c4a161-0428-48be-8178-654cb6c5c1cb",
     to: RECIPIENT_EMAIL,
     subject: 'נתוני הקצאת חלקה תפו"א — ' + plotId + ' (' + growerName + ')',
     from_name: 'מערכת הקצאת חלקות תפו"א',
     message: [
-      'שלום, מצורף סיכום נתוני חלקה להקצאת תפוא:',
-      '====================================================',
-      'מגדל: ' + growerName + ' | משק: ' + farmName + ' | טלפון: ' + (state.grower.phone||'—'),
-      'מזהה חלקה: ' + plotId + ' | שטח: ' + (state.plot_area_dunam||'—') + ' דונם | אזור: ' + (state.grower.region_code||'—'),
-      '----------------------------------------------------',
-      'תוצאות בדיקת מודל הקצאה:',
-      '- עמידה במחזור זרעים: ' + (state.parameters.crop_rotation.derived.rotation_requirement_met?'כן':'לא') + ' (' + (state.parameters.crop_rotation.derived.years_since_solanaceae!=null?state.parameters.crop_rotation.derived.years_since_solanaceae:'—') + ' שנים מאז סולניים)',
-      '- התאמת קרקע לעונה: ' + (state.parameters.soil_and_field.derived.soil_season_match?'כן':'לא'),
-      '- עמידה בהמתנה לחיטוי: ' + (state.parameters.weeds_and_disinfection.derived.disinfection_waiting_met?'כן':'לא'),
-      '----------------------------------------------------',
-      'נתוני JSON מלאים:',
-      JSON.stringify(state, null, 2)
+      'שם מגדל: ' + growerName,
+      'מזהה חלקה: ' + plotId
     ].join('\n')
   };
 
-  // Try direct POST to Web3Forms API
   fetch('https://api.web3forms.com/submit', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
@@ -857,8 +846,8 @@ function emailJson(){
     fallbackMailto(payload);
   });
   
-  // Also trigger local CSV download automatically
   try { exportCsv(); } catch(e){}
+  try { setTimeout(exportJson, 400); } catch(e){}
 }
 
 function fallbackMailto(payload){
@@ -893,6 +882,27 @@ function deepMerge(target,source){
   }
   return out;
 }
+
+
+function exportJson(){
+  try {
+    recomputeAllDerived();
+    var jsonStr = JSON.stringify(state, null, 2);
+    var blob = new Blob([jsonStr], {type: 'application/json;charset=utf-8;'});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'potato-plot-allocation-' + (state.plot_id || 'draft') + '.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('קובץ JSON ירד בהצלחה ✓');
+  } catch(e) {
+    showToast('שגיאה ביצוא קובץ JSON');
+  }
+}
+
 
 function exportCsv(){
   try {
