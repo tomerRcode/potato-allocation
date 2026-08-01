@@ -72,7 +72,7 @@
   .tab-btn.done:not(.active){background:var(--primary-tint);border-color:var(--primary);}
   .tab-btn.done:not(.active) .lbl{color:var(--primary-dark);}
 
-  main#step-body{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px 16px 6px;margin-top:12px;margin-bottom:8px;box-shadow:var(--shadow);min-height:auto;}
+  main#step-body{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px 16px 8px;margin-top:12px;margin-bottom:6px;box-shadow:var(--shadow);min-height:160px;}
   main#step-body h2{font-size:20px;display:flex;align-items:center;gap:6px;}
   main#step-body h2 .en{font-size:0.5em;margin-inline-start:4px;}
 
@@ -117,7 +117,19 @@
   .add-disease{background:var(--surface);border:2px dashed var(--primary);border-radius:var(--radius-sm);padding:12px;width:100%;color:var(--primary-dark);font-size:14.5px;font-weight:700;min-height:48px;}
 
   /* Fixed Bottom Bar Optimized for Mobile Thumbs */
-  footer.bar, .bar{position:relative !important;top:auto !important;bottom:auto !important;margin-top:10px !important;margin-bottom:40px !important;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:8px 10px;box-shadow:var(--shadow);z-index:100;}
+  footer.bar, .bar {
+  position: relative !important;
+  top: auto !important;
+  bottom: auto !important;
+  margin-top: 12px !important;
+  margin-bottom: 12px !important;
+  background: var(--surface-card, #fff9f0) !important;
+  border-top: 1.5px solid var(--line) !important;
+  border-radius: 0 0 var(--radius) var(--radius) !important;
+  padding: 12px 14px !important;
+  box-shadow: none !important;
+  z-index: 100 !important;
+}
 .bar .inner{max-width:980px;margin:0 auto;width:100%;display:flex;flex-direction:column;gap:8px;}
 .bar-row-top{display:flex;align-items:center;justify-content:space-between;width:100%;gap:8px;}
 .bar-row-actions{display:flex !important;flex-direction:row !important;align-items:center !important;gap:8px !important;width:100% !important;max-width:100% !important;overflow-x:auto !important;-webkit-overflow-scrolling:touch !important;touch-action:pan-x !important;padding:6px 2px !important;scrollbar-width:none !important;}
@@ -802,44 +814,56 @@ function saveJson(){
 
 /* AUTOMATED EMAIL SENDING TO torzt@post.bgu.ac.il */
 function emailJson(){
-  saveJson();
-  setTimeout(function(){ exportCsv(); }, 400);
-
+  recomputeAllDerived();
+  showToast('שולח נתונים במייל ל-torzt@post.bgu.ac.il...');
+  
+  var plotId = state.plot_id || 'טיוטה';
   var growerName = state.grower.name || 'לא צוין';
   var farmName = state.grower.farm_name || 'לא צוין';
-  var plotId = state.plot_id || 'ללא מזהה';
-  var plotArea = state.plot_area_dunam ? (state.plot_area_dunam + ' דונם') : '—';
-  var variety = resolveEnumCode('varieties', state.parameters.variety_and_market.variety_id);
-  var season = resolveEnumCode('seasons', state.parameters.soil_and_field.planting_season_code);
-
-  var subject = encodeURIComponent('נתוני הקצאת חלקת תפו"א — חלקה ' + plotId + ' (' + farmName + ')');
   
-  var bodyText = [
-    'שלום,',
-    '',
-    'להלן סיכום נתוני הקצאת חלקת תפו"א מתוך אפליקציית האיסוף בשדה:',
-    '----------------------------------------------------',
-    '• מגדל: ' + growerName,
-    '• משק / ישוב: ' + farmName,
-    '• מזהה חלקה: ' + plotId,
-    '• שטח להקצאה: ' + plotArea,
-    '• זן מתוכנן: ' + variety,
-    '• עונת שתילה: ' + season,
-    '• תאריך שתילה משוער: ' + (state.parameters.operational_and_neighboring.planned_planting_date || '—'),
-    '----------------------------------------------------',
-    'תוצאות בדיקות מודל ההקצאה (מחושב):',
-    '- עמידה במחזור זרעים: ' + fmtBool(state.parameters.crop_rotation.derived.rotation_requirement_met) + ' (' + (state.parameters.crop_rotation.derived.years_since_solanaceae!=null?state.parameters.crop_rotation.derived.years_since_solanaceae:'—') + ' שנים מאז סולניים)',
-    '- התאמת קרקע לעונה: ' + fmtBool(state.parameters.soil_and_field.derived.soil_season_match),
-    '- עמידה בהמתנה לחיטוי: ' + fmtBool(state.parameters.weeds_and_disinfection.derived.disinfection_waiting_met),
-    '----------------------------------------------------',
-    '',
-    '* קובצי הנתונים (JSON ו-Excel CSV) ירדו למכשירך אוטומטית. אנא צרף אותם להודעה זו לפני השליחה.'
-  ].join('\n');
+  var payload = {
+    access_key: "c8c4a161-0428-48be-8178-654cb6c5c1cb", // Web3Forms public API endpoint for torzt@post.bgu.ac.il
+    to: RECIPIENT_EMAIL,
+    subject: 'נתוני הקצאת חלקה תפו"א — ' + plotId + ' (' + growerName + ')',
+    from_name: 'מערכת הקצאת חלקות תפו"א',
+    message: [
+      'שלום, מצורף סיכום נתוני חלקה להקצאת תפוא:',
+      '====================================================',
+      'מגדל: ' + growerName + ' | משק: ' + farmName + ' | טלפון: ' + (state.grower.phone||'—'),
+      'מזהה חלקה: ' + plotId + ' | שטח: ' + (state.plot_area_dunam||'—') + ' דונם | אזור: ' + (state.grower.region_code||'—'),
+      '----------------------------------------------------',
+      'תוצאות בדיקת מודל הקצאה:',
+      '- עמידה במחזור זרעים: ' + (state.parameters.crop_rotation.derived.rotation_requirement_met?'כן':'לא') + ' (' + (state.parameters.crop_rotation.derived.years_since_solanaceae!=null?state.parameters.crop_rotation.derived.years_since_solanaceae:'—') + ' שנים מאז סולניים)',
+      '- התאמת קרקע לעונה: ' + (state.parameters.soil_and_field.derived.soil_season_match?'כן':'לא'),
+      '- עמידה בהמתנה לחיטוי: ' + (state.parameters.weeds_and_disinfection.derived.disinfection_waiting_met?'כן':'לא'),
+      '----------------------------------------------------',
+      'נתוני JSON מלאים:',
+      JSON.stringify(state, null, 2)
+    ].join('\n')
+  };
 
-  showToast('מוריד קבצים ופותח את אפליקציית המייל...');
-  setTimeout(function(){
-    window.location.href = 'mailto:' + RECIPIENT_EMAIL + '?subject=' + subject + '&body=' + encodeURIComponent(bodyText);
-  }, 800);
+  // Try direct POST to Web3Forms API
+  fetch('https://api.web3forms.com/submit', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+    body: JSON.stringify(payload)
+  }).then(function(res){ return res.json(); }).then(function(data){
+    if(data.success){
+      showToast('הנתונים נשלחו בהצלחה למייל! ✓');
+    } else {
+      fallbackMailto(payload);
+    }
+  })['catch'](function(err){
+    fallbackMailto(payload);
+  });
+  
+  // Also trigger local CSV download automatically
+  try { exportCsv(); } catch(e){}
+}
+
+function fallbackMailto(payload){
+  showToast('פותח אפליקציית מייל לשליחה...');
+  window.location.href = 'mailto:' + RECIPIENT_EMAIL + '?subject=' + encodeURIComponent(payload.subject) + '&body=' + encodeURIComponent(payload.message);
 }
 
 function importJson(event){
