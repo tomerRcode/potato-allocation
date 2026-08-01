@@ -308,7 +308,7 @@ function freshState(){
       soil_and_field:{soil_texture_code:'',drainage_quality_code:'',planting_season_code:'',stoniness_level_code:'',slope_percent:'',soil_compaction_level_code:'',derived:{soil_season_match:null}},
       soil_diseases:[],
       weeds_and_disinfection:{orobanche_history:'',orobanche_severity_code:'',last_orobanche_year:'',perennial_weeds:[],soil_disinfection_done:'',disinfection_type_code:'',disinfection_date:'',derived:{years_since_orobanche:null,disinfection_waiting_met:null}},
-      variety_and_market:{variety_id:'',growth_period_days:'',has_variety_proximity_limit:'',variety_proximity_notes:'',market_destination_code:'',tuber_size_target_code:''},
+      variety_and_market:{variety_id:'',growth_period_days:'',has_variety_proximity_limit:'',variety_proximity_notes:'',tuber_size_target_code:''},
       operational_and_neighboring:{transport_distance_km:'',heavy_truck_access:'',packing_slot_id:'',neighboring_crop_code:'',neighbor_season_code:'',planned_planting_date:'',frost_risk_code:'',heat_stress_risk_code:'',derived:{season_conflict_flag:null}},
       external_constraints:{has_external_constraint:'',organic_buffer_zone:'',security_restriction_zone:'',political_constraint_flag:'',constraint_description:''}
     }
@@ -394,7 +394,7 @@ var STEPS = [
         {group:'variety_and_market',key:'growth_period_days',label_he:'אורך עונת גידול הזן',label_en:'Variety growth period',unit:'ימים',type:'decimal',required:true,help:'מספר ימי גידול מתוכננים (למשל: 90, 100, 110 ימים).'},
         {group:'variety_and_market',key:'has_variety_proximity_limit',label_he:'קיימת מגבלת סמיכות לזנים רגישים בחלקות שרות?',label_en:'Proximity restriction for sensitive varieties',type:'tri_state',required:true,triggersToggle:true,help:'למניעת הדבקת מחלות בין זנים רגישים/שונים בחלקות גובלות.'},
         {group:'variety_and_market',key:'variety_proximity_notes',label_he:'פירוט מגבלת סמיכות זנים',label_en:'Proximity restriction notes',type:'textarea',span2:true,cond:function(s){return s.parameters.variety_and_market.has_variety_proximity_limit==='YES';}},
-        {group:'variety_and_market',key:'market_destination_code',label_he:'יעד שיווק',label_en:'Market destination',type:'enum',options:'market',required:true},
+        
         {group:'variety_and_market',key:'tuber_size_target_code',label_he:'גודל פקעת מבוקש',label_en:'Target tuber size',type:'enum',options:'tuber_size',required:true}
       ]},
       {title_he:'תפעול וגידולים שכנים',fields:[
