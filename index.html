@@ -305,7 +305,7 @@ function freshState(){
     parameters:{
       crop_rotation:{last_potato_year:'',last_solanaceae_year:'',previous_crop_id:'',previous_crop_herbicides:[],derived:{years_since_solanaceae:null,rotation_requirement_met:null}},
       irrigation:{has_irrigation:'',irrigation_method_code:'',water_flow_rate:'',annual_quota_m3:'',water_source_code:''},
-      soil_and_field:{soil_texture_code:'',drainage_quality_code:'',planting_season_code:'',stoniness_level_code:'',slope_percent:'',harvest_accessibility_code:'',soil_compaction_level_code:'',derived:{soil_season_match:null}},
+      soil_and_field:{soil_texture_code:'',drainage_quality_code:'',planting_season_code:'',stoniness_level_code:'',slope_percent:'',soil_compaction_level_code:'',derived:{soil_season_match:null}},
       soil_diseases:[],
       weeds_and_disinfection:{orobanche_history:'',orobanche_severity_code:'',last_orobanche_year:'',perennial_weeds:[],soil_disinfection_done:'',disinfection_type_code:'',disinfection_date:'',derived:{years_since_orobanche:null,disinfection_waiting_met:null}},
       variety_and_market:{variety_id:'',growth_period_days:'',has_variety_proximity_limit:'',variety_proximity_notes:'',market_destination_code:'',tuber_size_target_code:''},
@@ -364,7 +364,7 @@ var STEPS = [
       {title_he:'התאמת שטח',fields:[
         {group:'soil_and_field',key:'stoniness_level_code',label_he:'נוכחות אבנים בקרקע / צורך בסיקול',label_en:'Presence of stones in soil',type:'enum',options:'severity',required:true,help:'אבניות גבוהה עלולה לפגוע בפקעות ובמכונות אסיף.'},
         {group:'soil_and_field',key:'slope_percent',label_he:'שיפוע החלקה',label_en:'Slope',unit:'%',type:'decimal',min:0,max:100,required:true,help:'התראה מעל 5%.'},
-        {group:'soil_and_field',key:'harvest_accessibility_code',label_he:'נגישות לציוד אסיף כבד',label_en:'Harvest accessibility',type:'enum',options:'accessibility',required:true},
+        
         {group:'soil_and_field',key:'soil_compaction_level_code',label_he:'דחיסות קרקע',label_en:'Soil compaction',type:'enum',options:'level3',required:true}
       ]}
     ]},
@@ -399,7 +399,7 @@ var STEPS = [
       ]},
       {title_he:'תפעול וגידולים שכנים',fields:[
         {group:'operational_and_neighboring',key:'transport_distance_km',label_he:'מרחק הובלה לבית אריזה (ק"מ)',label_en:'Transport distance',unit:'ק"מ',type:'decimal',required:true},
-        {group:'operational_and_neighboring',key:'heavy_truck_access',label_he:'נגישות למשאית כבדה',label_en:'Heavy truck access',type:'tri_state',required:true},
+        
         {group:'operational_and_neighboring',key:'packing_slot_id',label_he:'חלון/שבוע אסיף מתוכנן בבית האריזה',label_en:'Target harvest window',type:'enum',options:'packing_slots',help:'תזמון עומסים וויסות אסיף בבית האריזה.'},
         {group:'operational_and_neighboring',key:'neighboring_crop_code',label_he:'גידול שכן גובל בחלקה',label_en:'Neighboring crop',type:'enum',options:'crops'},
         {group:'operational_and_neighboring',key:'neighbor_season_code',label_he:'עונת הגידול השכן',label_en:'Neighboring season',type:'enum',options:'seasons'},
