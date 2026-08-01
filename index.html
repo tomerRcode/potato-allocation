@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>איסוף נתונים — מודל הקצאת חלקות תפו"א</title>
+<meta name="description" content="טופס איסוף נתונים מותאם לטלפונים ניידים ולשדה — שלב הקצאת חלקות תפוחי אדמה">
+<meta name="theme-color" content="#3D5E26">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@600;700&family=Heebo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F4F1E8;
+    --surface:#FFFFFF;
+    --surface-alt:#EBE6D5;
+    --ink:#1F2917;
+    --ink-soft:#4E5742;
+    --ink-faint:#7F8570;
+    --line:#D9D2BC;
+    --primary:#3D5E26;
+    --primary-dark:#2A4319;
+    --primary-tint:#E2ECD5;
+    --gold:#B8860B;
+    --gold-tint:#F7F0D8;
+    --error:#A83226;
+    --radius:14px;
+    --radius-sm:10px;
+    --shadow:0 3px 12px rgba(31,41,23,0.06);
+    --safe-bottom:env(safe-area-inset-bottom, 0px);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:'Heebo',system-ui,-apple-system,sans-serif;font-size:16px;line-height:1.55;}
+  h1,h2,h3{font-family:'Frank Ruhl Libre',Georgia,serif;font-weight:700;margin:0;color:var(--ink);}
+  .en{direction:ltr;unicode-bidi:isolate;color:var(--ink-faint);font-size:0.65em;font-weight:500;display:block;letter-spacing:0.01em;}
+  code,.mono{font-family:'IBM Plex Mono',monospace;}
+  button{font-family:inherit;cursor:pointer;touch-action:manipulation;}
+  button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible{outline:3px solid var(--gold);outline-offset:1px;}
+
+  .app-shell{max-width:980px;margin:0 auto;padding:14px 14px calc(130px + var(--safe-bottom));}
+
+  header.top{margin-bottom:10px;}
+  header.top h1{font-size:23px;color:var(--primary-dark);line-height:1.2;}
+  header.top h1 .en{font-size:0.5em;margin-top:2px;}
+  header.top p.sub{color:var(--ink-soft);margin:6px 0 0;font-size:14px;}
+  .stage-badge{display:inline-block;background:var(--primary-tint);color:var(--primary-dark);font-size:12px;font-weight:700;padding:3px 8px;border-radius:99px;margin-bottom:6px;border:1px solid var(--primary);}
+
+  .techpanel-btn{background:none;border:none;color:var(--ink-faint);font-size:13px;text-decoration:underline;padding:4px 0;margin-top:4px;display:block;}
+  .techpanel{display:none;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-sm);padding:12px 14px;margin-top:8px;font-size:13px;color:var(--ink-soft);}
+  .techpanel.open{display:block;}
+
+  .progress-wrap{margin-top:12px;}
+  .progress-track{height:7px;background:var(--surface-alt);border-radius:99px;overflow:hidden;}
+  .progress-fill{height:100%;background:var(--primary);border-radius:99px;transition:width .3s ease;}
+  .progress-label{font-size:12px;color:var(--ink-faint);margin-top:4px;}
+
+  /* Scrollable Tab Navigation for Mobile */
+  .tabbar-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;margin-top:12px;padding-bottom:4px;scrollbar-width:none;}
+  .tabbar-scroll::-webkit-scrollbar{display:none;}
+  .tabbar{display:flex;gap:6px;min-width:max-content;}
+  .tab-btn{flex:0 0 105px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:var(--surface);border:1.5px solid var(--line);border-radius:var(--radius-sm);padding:8px 4px;min-height:68px;text-align:center;box-shadow:var(--shadow);}
+  .tab-btn .icon{font-size:19px;}
+  .tab-btn .lbl{font-size:12px;font-weight:600;color:var(--ink-soft);line-height:1.2;}
+  .tab-btn.active{background:var(--primary);border-color:var(--primary);}
+  .tab-btn.active .lbl{color:#fff;}
+  .tab-btn.done:not(.active){background:var(--primary-tint);border-color:var(--primary);}
+  .tab-btn.done:not(.active) .lbl{color:var(--primary-dark);}
+
+  main#step-body{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px 16px;margin-top:14px;box-shadow:var(--shadow);min-height:200px;}
+  main#step-body h2{font-size:20px;display:flex;align-items:center;gap:6px;}
+  main#step-body h2 .en{font-size:0.5em;margin-inline-start:4px;}
+
+  .section{margin-top:20px;}
+  .section:first-child{margin-top:12px;}
+  .section h3{font-size:15.5px;color:var(--primary-dark);border-bottom:2px solid var(--primary-tint);padding-bottom:5px;margin-bottom:12px;}
+
+  .field-grid{display:grid;grid-template-columns:1fr;gap:14px;}
+  @media (min-width:640px){ .field-grid{grid-template-columns:1fr 1fr;gap:16px 20px;} }
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field.span2{grid-column:1 / -1;}
+  .field label.lbl{font-size:15px;font-weight:600;}
+  .field label.lbl .req{color:var(--error);margin-inline-start:3px;}
+  .field .help{font-size:12.5px;color:var(--ink-faint);}
+  
+  .field input[type=text],.field input[type=number],.field input[type=date],.field select,.field textarea{
+    font-family:inherit;font-size:16px;padding:12px 12px;border:1.5px solid var(--line);border-radius:var(--radius-sm);background:#fff;color:var(--ink);min-height:48px;width:100%;-webkit-appearance:none;
+  }
+  .field textarea{resize:vertical;min-height:75px;}
+  .unit{color:var(--ink-faint);font-size:13px;margin-inline-start:4px;}
+
+  .tri{display:flex;gap:6px;}
+  .tri button{flex:1;padding:12px 4px;font-size:15px;font-weight:600;border:1.5px solid var(--line);background:#fff;border-radius:var(--radius-sm);color:var(--ink-soft);min-height:48px;}
+  .tri button.on{background:var(--primary);border-color:var(--primary);color:#fff;}
+  .tri button.on.unknown{background:var(--ink-faint);border-color:var(--ink-faint);}
+
+  .chips{display:flex;flex-wrap:wrap;gap:6px;}
+  .chip{padding:10px 14px;border:1.5px solid var(--line);border-radius:999px;font-size:14px;background:#fff;color:var(--ink-soft);min-height:44px;}
+  .chip.on{background:var(--primary-tint);border-color:var(--primary);color:var(--primary-dark);font-weight:700;}
+
+  .derived-panel{margin-top:16px;background:var(--gold-tint);border:1px solid #E2D1A3;border-radius:var(--radius-sm);padding:12px 14px;}
+  .derived-panel h4{font-size:13px;color:var(--gold);margin:0 0 6px;font-weight:700;}
+  .derived-row{display:flex;justify-content:space-between;gap:8px;font-size:13.5px;padding:5px 0;border-bottom:1px dashed #E2D1A3;}
+  .derived-row:last-child{border-bottom:none;}
+  .derived-row .v{font-family:'IBM Plex Mono',monospace;font-weight:700;}
+  .v.yes{color:var(--primary-dark);} .v.no{color:var(--error);} .v.pending{color:var(--ink-faint);}
+
+  .disease-card{border:1.5px solid var(--line);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:10px;background:var(--bg);}
+  .disease-card .row-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+  .disease-card .row-top b{font-size:14px;}
+  .disease-card .remove{background:none;border:none;color:var(--error);font-size:13px;font-weight:600;padding:6px;}
+  .add-disease{background:var(--surface);border:2px dashed var(--primary);border-radius:var(--radius-sm);padding:12px;width:100%;color:var(--primary-dark);font-size:14.5px;font-weight:700;min-height:48px;}
+
+  /* Fixed Bottom Bar Optimized for Mobile Thumbs */
+  footer.bar{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1.5px solid var(--line);padding:10px 12px calc(10px + var(--safe-bottom));z-index:100;box-shadow:0 -3px 12px rgba(31,41,23,0.09);}
+  footer.bar .inner{max-width:980px;margin:0 auto;width:100%;display:flex;flex-wrap:wrap;align-items:center;gap:6px;}
+  .btn{border-radius:var(--radius-sm);border:1.5px solid var(--line);background:#fff;color:var(--ink);padding:10px 14px;font-size:14px;font-weight:700;min-height:46px;white-space:nowrap;display:inline-flex;align-items:center;justify-content:center;}
+  .btn.primary{background:var(--primary);border-color:var(--primary);color:#fff;}
+  .btn.ghost{background:none;}
+  .btn:disabled{opacity:0.4;cursor:not-allowed;}
+  
+  /* Large Highlighted Email Button on Far Left */
+  .btn.email-btn{
+    background:var(--primary-dark);
+    border-color:var(--primary-dark);
+    color:#fff;
+    font-size:15px;
+    font-weight:700;
+    padding:11px 18px;
+    min-height:48px;
+    box-shadow:0 3px 10px rgba(42,67,25,0.3);
+  }
+
+  .spacer{flex:1;}
+  .autosave{font-size:11.5px;color:var(--ink-faint);width:100%;text-align:center;order:-1;margin-bottom:4px;}
+  @media (min-width:600px){ .autosave{width:auto;order:0;margin-bottom:0;} }
+
+  .mobile-actions{display:flex;align-items:center;gap:6px;overflow-x:auto;padding-bottom:2px;max-width:100%;-webkit-overflow-scrolling:touch;}
+  .mobile-actions::-webkit-scrollbar{display:none;}
+  .mobile-actions .btn:not(.email-btn){padding:8px 10px;font-size:13px;min-height:40px;}
+
+  .review-group{margin-top:18px;}
+  .review-group h3{font-size:15px;}
+  .review-table{width:100%;border-collapse:collapse;margin-top:6px;font-size:13.5px;}
+  .review-table td{padding:6px 6px;border-bottom:1px solid var(--line);}
+  .review-table td:first-child{color:var(--ink-soft);width:45%;}
+  .review-table td:last-child{font-weight:600;}
+  .missing{color:var(--error);font-size:13.5px;margin-top:10px;background:#F6E4E0;border-radius:var(--radius-sm);padding:8px 10px;}
+
+  .toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:999px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .25s ease, transform .25s ease;z-index:200;text-align:center;max-width:90%;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(-4px);}
+
+  .warning-inline{color:var(--gold);font-size:12px;margin-top:2px;font-weight:600;}
+</style>
+</head>
+<body>
+<div class="app-shell">
+  <header class="top">
+    <div class="stage-badge">שלב הקצאת חלקות (Plot Allocation)</div>
+    <h1>איסוף נתונים לתכנון תפו"א<span class="en">Potato Allocation Data</span></h1>
+    <p class="sub">טופס נייד לשדה: מחזור זרעים, השקיה, סוג קרקע, מחלות, עלקת, אילוצים וזן.</p>
+    <button class="techpanel-btn" onclick="document.getElementById('techpanel').classList.toggle('open')">ℹ פרמטרים להקצאה (הסבר)</button>
+    <div class="techpanel" id="techpanel">
+      <strong>פרמטרים במודל ההקצאה:</strong>
+      <ul>
+        <li><strong>מחזור זרעים:</strong> 4+ שנים תפו"א על תפו"א, מרווח מגידולי סולניים (עגבניה, פלפל, חציל).</li>
+        <li><strong>השקיה:</strong> קיום השקיה, ספיקות (מ"ק/שעה), שיטה ומקור מים.</li>
+        <li><strong>מחלות קרקע:</strong> דוררת, קוליטוטריכיום, פוסריום, גרב.</li>
+        <li><strong>קרקע ושטח:</strong> נוכחות אבנים, שיפוע, סוג קרקע (חול, לס, לום, חרסית), ניקוז.</li>
+        <li><strong>עשביה וחיטוי:</strong> היסטוריית עלקת (Orobanche), חיטוי (אדיגן) והמתנה.</li>
+        <li><strong>שכנות:</strong> מניעת קונפליקט עונות (לא אביב ליד סתיו).</li>
+        <li><strong>תפעול וזן:</strong> הובלה, ימי גידול, סמיכות זנים, אילוץ פוליטי/חיצוני.</li>
+      </ul>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+      <div class="progress-label" id="progressLabel"></div>
+    </div>
+    <div class="tabbar-scroll">
+      <div class="tabbar" id="tabbar"></div>
+    </div>
+  </header>
+<div id="viewerNotice" style="display:none;background:#fef3c7;color:#92400e;padding:8px 12px;font-size:12px;text-align:center;border-bottom:1px solid #fde68a;">
+  💡 לביצועים מיטביים בטלפון, מומלץ לפתוח את הקובץ ב-<strong>Chrome</strong> או <strong>Safari</strong> (לחץ על 3 הנקודות למעלה ← פתח בדפדפן).
+</div>
+
+  <main id="step-body">
+    <div style="text-align:center;padding:40px 10px;color:var(--ink-faint);">טוען טופס...</div>
+  </main>
+</div>
+
+<footer class="bar">
+  <div class="inner">
+    <div class="autosave" id="autosaveIndicator">הטיוטה עוד לא נשמרה</div>
+    <button class="btn ghost" id="btnBack" onclick="goStep(currentStep-1)">→ הקודם</button>
+    <button class="btn primary" id="btnNext" onclick="goStep(currentStep+1)">הבא ←</button>
+    <span class="spacer"></span>
+    <div class="mobile-actions">
+      <input type="file" id="importFile" accept=".json" style="display:none" onchange="importJson(event)">
+      <button class="btn ghost" onclick="document.getElementById('importFile').click()">📂 ייבוא</button>
+      <button class="btn ghost" onclick="exportCsv()">📊 ייצוא לאקסל</button>
+      <button class="btn ghost" onclick="saveJson()">💾 שמירה</button>
+      <button class="btn email-btn" onclick="emailJson()">✉ שליחה במייל</button>
+    </div>
+  </div>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// Polyfills for maximum mobile compatibility
+if (!Object.assign) {
+  Object.assign = function(target) {
+    if (target == null) throw new TypeError('Cannot convert undefined or null to object');
+    var to = Object(target);
+    for (var index = 1; index < arguments.length; index++) {
+      var nextSource = arguments[index];
+      if (nextSource != null) {
+        for (var key in nextSource) {
+          if (Object.prototype.hasOwnProperty.call(nextSource, key)) {
+            to[key] = nextSource[key];
+          }
+        }
+      }
+    }
+    return to;
+  };
+}
+
+if (!Array.isArray) {
+  Array.isArray = function(arg) {
+    return Object.prototype.toString.call(arg) === '[object Array]';
+  };
+}
+
+var RECIPIENT_EMAIL = "torzt@post.bgu.ac.il";
+
+var BUSINESS_RULES = {
+  ROTATION_MIN_YEARS: 4,
+  SLOPE_WARNING_PERCENT: 5,
+  DISINFECTION_WAITING_DAYS: { ADIGAN: 21, METAM_SODIUM: 14, DAZOMET: 21, SOLARIZATION: 30, OTHER: 14 },
+  SOIL_SEASON_COMPATIBILITY: {
+    SANDY: ['AUTUMN','SPRING'],
+    SANDY_LOAM: ['AUTUMN','SPRING','SUMMER'],
+    SANDY_LOESS: ['AUTUMN','SPRING'],
+    HEAVY_LOESS: ['SPRING','SUMMER','AUTUMN'],
+    LOAM: ['SPRING','SUMMER','AUTUMN'],
+    CLAY: ['SPRING'],
+    BASALT: ['SPRING','SUMMER']
+  }
+};
+
+var ENUMS = {
+  regions: [['NEGEV','נגב','Negev'],['HEFER','חפר','Hefer Valley'],['GOLAN','גולן','Golan'],['ARAVA','ערבה','Arava'],['COASTAL','מישור החוף','Coastal Plain'],['JEZREEL','עמק יזרעאל','Jezreel Valley'],['JORDAN_VALLEY','בקעת הירדן','Jordan Valley'],['UPPER_GALILEE','גליל עליון','Upper Galilee'],['OTHER','אחר','Other']],
+  organic_statuses: [['NONE','קונבנציונלי (לא אורגני)','Conventional'],['CERTIFIED','מוסמך אורגני','Certified organic'],['IN_CONVERSION','בתהליך הסבה לאורגני','In conversion']],
+  crops: [['WHEAT','חיטה','Wheat'],['CORN','תירס','Corn'],['CARROT','גזר','Carrot'],['ONION','בצל','Onion'],['BEAN','שעועית','Bean'],['TOMATO','עגבניה (סולניים)','Tomato'],['PEPPER','פלפל (סולניים)','Pepper'],['EGGPLANT','חציל (סולניים)','Eggplant'],['POTATO','תפו"א (סולניים)','Potato'],['SUNFLOWER','חמנייה','Sunflower'],['COTTON','כותנה','Cotton'],['FALLOW','בור','Fallow'],['OTHER','אחר','Other']],
+  herbicides: [['HERB_METRIBUZIN','מטריבוזין','Metribuzin'],['HERB_LINURON','לינורון','Linuron'],['HERB_GLYPHOSATE','גליפוסט','Glyphosate'],['HERB_PARAQUAT','פראקוואט','Paraquat'],['HERB_OTHER','אחר','Other']],
+  irrigation_methods: [['DRIP','טפטוף','Drip'],['SPRINKLER','המטרה','Sprinkler'],['FLOOD','שיטפון','Flood'],['CENTER_PIVOT','ממטרה מרכזית','Center pivot'],['MOBILE_LINE','קו נייד','Mobile line']],
+  water_sources: [['MEKOROT','מקורות','Mekorot'],['LOCAL_WELL','באר מקומית','Local well'],['RECYCLED','מים ממוחזרים (שפד"ן/קולחין)','Recycled'],['MIXED','מעורב','Mixed'],['OTHER','אחר','Other']],
+  diseases: [['VERTICILLIUM','דוררת (Verticillium)','Verticillium'],['COLLETOTRICHUM','קוליטוטריכום','Colletotrichum'],['FUSARIUM','פוזריום','Fusarium'],['SCAB','גרב','Common scab'],['SILVER_SCURF','ניוון כסוף','Silver scurf'],['RHIZOCTONIA','ריזוקטוניה','Rhizoctonia'],['OTHER','אחר','Other']],
+  severity: [['NONE','ללא','None'],['LOW','קל / מעט (לא מפריע)','Low'],['MEDIUM','בינוני (דרוש זהירות)','Medium'],['HIGH','חמור (סיכון לנזק / דרוש סיקול)','High']],
+  accessibility: [['GOOD','טובה','Good'],['MODERATE','בינונית','Moderate'],['POOR','ירודה','Poor']],
+  level3: [['LOW','נמוך','Low'],['MEDIUM','בינוני','Medium'],['HIGH','גבוה','High']],
+  weeds: [['OROBANCHE','עלקת (Orobanche)','Orobanche'],['JOHNSONGRASS','דורה חלבית','Johnsongrass'],['PURSLANE','רגלה','Purslane'],['BINDWEED','חבלבל השדה','Bindweed'],['NUTSEDGE','גומא','Nutsedge'],['OTHER','אחר','Other']],
+  disinfection_types: [['ADIGAN','אדיגן','Adigan'],['METAM_SODIUM','מתאם סודיום','Metam sodium'],['DAZOMET','בזמיד / דזומט','Dazomet'],['SOLARIZATION','סולריזציה','Solarization'],['OTHER','אחר','Other']],
+  market: [['LOCAL','שוק מקומי','Local market'],['EXPORT','ייצוא','Export'],['PROCESSING','תעשייה','Processing']],
+  tuber_size: [['SMALL','קטן','Small'],['MEDIUM','בינוני','Medium'],['LARGE','גדול','Large'],['MIXED','מעורב','Mixed']],
+  soil_texture: [
+    ['SANDY','חול (נגב מערבי / דיונות)','Sandy'],
+    ['SANDY_LOAM','חולית-לומית (הבשור / מערב נגב)','Sandy loam'],
+    ['SANDY_LOESS','לס חולי (צפון/מערב נגב)','Sandy Loess'],
+    ['HEAVY_LOESS','לס כבד / בינוני (מרכז נגב)','Heavy Loess'],
+    ['LOAM','לומית (שרון / מישור החוף)','Loam'],
+    ['CLAY','אדמה כבדה / חרסיתית (עמק יזרעאל / גליל)','Clay'],
+    ['BASALT','קרקע בזלתית (רמת הגולן)','Basaltic']
+  ],
+  drainage: [['GOOD','טובה','Good'],['MODERATE','בינונית','Moderate'],['POOR','ירודה','Poor']],
+  seasons: [['SPRING','אביב','Spring'],['SUMMER','קיץ','Summer'],['AUTUMN','סתיו','Autumn'],['WINTER','חורף','Winter']],
+  varieties: [['DESIREE','דזירה','Désirée'],['NICOLA','ניקולה','Nicola'],['SPUNTA','ספונטה','Spunta'],['RIVIERA','ריביירה','Riviera'],['SIFRA','סיפרה','Sifra'],['VIVALDI','ויוולדי','Vivaldi'],['OTHER','אחר','Other']],
+  packing_slots: [['SLOT_A','חלון אסיף מוקדם (שבוע 1-4)','Early Slot'],['SLOT_B','חלון אסיף מרכזי (שבוע 5-8)','Mid Slot'],['SLOT_C','חלון אסיף מאוחר (שבוע 9-12)','Late Slot']]
+};
+
+function freshState(){
+  return {
+    schema_version:'4.3',
+    grower:{name:'',farm_name:'',phone:'',region_code:''},
+    plot_id:'',
+    plot_area_dunam:'',
+    elevation_m:'',
+    certification:{organic_status:''},
+    parameters:{
+      crop_rotation:{last_potato_year:'',last_solanaceae_year:'',previous_crop_id:'',previous_crop_herbicides:[],derived:{years_since_solanaceae:null,rotation_requirement_met:null}},
+      irrigation:{has_irrigation:'',irrigation_method_code:'',water_flow_rate:'',annual_quota_m3:'',water_source_code:''},
+      soil_and_field:{soil_texture_code:'',drainage_quality_code:'',planting_season_code:'',stoniness_level_code:'',slope_percent:'',harvest_accessibility_code:'',soil_compaction_level_code:'',derived:{soil_season_match:null}},
+      soil_diseases:[],
+      weeds_and_disinfection:{orobanche_history:'',orobanche_severity_code:'',last_orobanche_year:'',perennial_weeds:[],soil_disinfection_done:'',disinfection_type_code:'',disinfection_date:'',derived:{years_since_orobanche:null,disinfection_waiting_met:null}},
+      variety_and_market:{variety_id:'',growth_period_days:'',has_variety_proximity_limit:'',variety_proximity_notes:'',market_destination_code:'',tuber_size_target_code:''},
+      operational_and_neighboring:{transport_distance_km:'',heavy_truck_access:'',packing_slot_id:'',neighboring_crop_code:'',neighbor_season_code:'',planned_planting_date:'',frost_risk_code:'',heat_stress_risk_code:'',derived:{season_conflict_flag:null}},
+      external_constraints:{has_external_constraint:'',organic_buffer_zone:'',security_restriction_zone:'',political_constraint_flag:'',constraint_description:''}
+    }
+  };
+}
+var state = freshState();
+var currentStep = 0;
+
+var STEPS = [
+  {id:'grower_plot',icon:'🧑‍🌾',title_he:'מגדל וחלקה',title_en:'Grower & Plot',
+    sections:[
+      {title_he:'פרטי מגדל',fields:[
+        {top:true,path:'grower.name',label_he:'שם מגדל',label_en:'Grower name',type:'text',required:true},
+        {top:true,path:'grower.farm_name',label_he:'שם משק / ישוב',label_en:'Farm / settlement',type:'text',required:true},
+        {top:true,path:'grower.phone',label_he:'טלפון',label_en:'Phone',type:'text'},
+        {top:true,path:'grower.region_code',label_he:'אזור בארץ',label_en:'Region',type:'enum',options:'regions',required:true}
+      ]},
+      {title_he:'פרטי החלקה',fields:[
+        {top:true,path:'plot_id',label_he:'מזהה חלקה',label_en:'Plot ID',type:'text',required:true},
+        {top:true,path:'plot_area_dunam',label_he:'שטח החלקה',label_en:'Plot area',unit:'דונם',type:'decimal',required:true,help:'שטח נטו מיועד להקצאה בדונמים.'},
+        {top:true,path:'elevation_m',label_he:'גובה מעל פני הים',label_en:'Elevation',unit:'מ׳',type:'decimal'},
+        {top:true,path:'certification.organic_status',label_he:'האם החלקה מוגדרת אורגנית?',label_en:'Organic status',type:'enum',options:'organic_statuses',help:'חלקה אורגנית שוללת חיטוי כימי ודורשת רצועת חיץ מריסוסים.'}
+      ]}
+    ]},
+  {id:'crop_rotation',icon:'🌱',title_he:'מחזור ושארתיות',title_en:'Rotation & Residues',
+    sections:[
+      {title_he:'מחזור זרעים ושארתיות חומרי הדברה',fields:[
+        {group:'crop_rotation',key:'last_potato_year',label_he:'שנת תפו"א אחרונה בחלקה',label_en:'Last potato year',type:'year',required:true,help:'מרווח נדרש: 4 שנים לפחות בין מחזורי תפו"א.'},
+        {group:'crop_rotation',key:'last_solanaceae_year',label_he:'שנת גידול סולניים אחרונה (עגבניה / פלפל / חציל / תפו"א)',label_en:'Last Solanaceae year',type:'year',required:true,help:'סולניים חולקים מחלות קרקע משותפות (דוררת, פוסריום) עם תפו"א.'},
+        {group:'crop_rotation',key:'previous_crop_id',label_he:'גידול קודם בחלקה',label_en:'Previous crop',type:'enum',options:'crops',required:true},
+        {group:'crop_rotation',key:'previous_crop_herbicides',label_he:'קוטלי עשבים בגידול קודם (שארתיות)',label_en:'Herbicides used',type:'multi_enum',options:'herbicides',span2:true,help:'בדיקת סיכון שארתיות חומרים הפוגעים בתפו"א.'}
+      ],derivedPanel:{title_he:'מחושב אוטומטית למודל ההקצאה',rows:[
+        {label_he:'שנים מאז גידול סולניים אחרון',get:function(s){return s.parameters.crop_rotation.derived.years_since_solanaceae;},fmt:function(v){return v==null?'—':v+' שנים';}},
+        {label_he:'עמידה במחזור זרעים (≥ 4 שנים)',get:function(s){return s.parameters.crop_rotation.derived.rotation_requirement_met;},fmt:fmtBool}
+      ]}}
+    ]},
+  {id:'soil_irrigation',icon:'💧',title_he:'קרקע, השקיה ושטח',title_en:'Soil, Water & Field',
+    sections:[
+      {title_he:'סוג קרקע וניקוז',fields:[
+        {group:'soil_and_field',key:'soil_texture_code',label_he:'סוג/מרקם קרקע (בישראל)',label_en:'Soil texture (Israel)',type:'enum',options:'soil_texture',required:true,help:'למשל: גידול סתיו בנגב מעדיף קרקע חולית/לס חולי.'},
+        {group:'soil_and_field',key:'drainage_quality_code',label_he:'איכות ניקוז',label_en:'Drainage quality',type:'enum',options:'drainage',required:true},
+        {group:'soil_and_field',key:'planting_season_code',label_he:'עונת שתילה מתוכננת',label_en:'Target season',type:'enum',options:'seasons',required:true}
+      ],derivedPanel:{title_he:'מחושב אוטומטית',rows:[
+        {label_he:'התאמת מרקם הקרקע לעונת השתילה',get:function(s){return s.parameters.soil_and_field.derived.soil_season_match;},fmt:fmtBool}
+      ]}},
+      {title_he:'שיקולי השקיה ומים',fields:[
+        {group:'irrigation',key:'has_irrigation',label_he:'קיימת תשתית השקיה בחלקה',label_en:'Irrigation available',type:'tri_state',required:true,triggersToggle:true},
+        {group:'irrigation',key:'irrigation_method_code',label_he:'שיטת השקיה',label_en:'Method',type:'enum',options:'irrigation_methods',cond:function(s){return s.parameters.irrigation.has_irrigation==='YES';}},
+        {group:'irrigation',key:'water_flow_rate',label_he:'ספיקת מים זמינה בחלקה',label_en:'Flow rate',unit:'מ"ק/שעה',type:'decimal',cond:function(s){return s.parameters.irrigation.has_irrigation==='YES';},help:'ספיקה שעתית זמינה להשקיה.'},
+        {group:'irrigation',key:'annual_quota_m3',label_he:'מכסת מים שנתית',label_en:'Annual water quota',unit:'מ"ק',type:'decimal'},
+        {group:'irrigation',key:'water_source_code',label_he:'מקור מים',label_en:'Water source',type:'enum',options:'water_sources'}
+      ]},
+      {title_he:'התאמת שטח',fields:[
+        {group:'soil_and_field',key:'stoniness_level_code',label_he:'נוכחות אבנים בקרקע / צורך בסיקול',label_en:'Presence of stones in soil',type:'enum',options:'severity',required:true,help:'אבניות גבוהה עלולה לפגוע בפקעות ובמכונות אסיף.'},
+        {group:'soil_and_field',key:'slope_percent',label_he:'שיפוע החלקה',label_en:'Slope',unit:'%',type:'decimal',min:0,max:100,required:true,help:'התראה מעל 5%.'},
+        {group:'soil_and_field',key:'harvest_accessibility_code',label_he:'נגישות לציוד אסיף כבד',label_en:'Harvest accessibility',type:'enum',options:'accessibility',required:true},
+        {group:'soil_and_field',key:'soil_compaction_level_code',label_he:'דחיסות קרקע',label_en:'Soil compaction',type:'enum',options:'level3',required:true}
+      ]}
+    ]},
+  {id:'disease_weeds',icon:'🐛',title_he:'מחלות, עשביה וחיטוי',title_en:'Diseases, Weeds & Disinfection',
+    sections:[
+      {title_he:'מחלות קרקע (דוררת, קוליטוטריכיום, פוסריום, גרב)',repeatable:'soil_diseases'},
+      {title_he:'עשביה ונגיעות עלקת (Orobanche)',fields:[
+        {group:'weeds_and_disinfection',key:'orobanche_history',label_he:'היסטוריית נגיעות עלקת בחלקה',label_en:'Broomrape / Orobanche history',type:'tri_state',required:true,triggersToggle:true,help:'עלקת היא אילוץ קריטי בהקצאת חלקות.'},
+        {group:'weeds_and_disinfection',key:'orobanche_severity_code',label_he:'רמת חומרה בהופעה אחרונה',label_en:'Orobanche severity',type:'enum',options:'severity',cond:function(s){return s.parameters.weeds_and_disinfection.orobanche_history==='YES';}},
+        {group:'weeds_and_disinfection',key:'last_orobanche_year',label_he:'שנת נגיעות עלקת אחרונה',label_en:'Year last seen',type:'year',cond:function(s){return s.parameters.weeds_and_disinfection.orobanche_history==='YES';}},
+        {group:'weeds_and_disinfection',key:'perennial_weeds',label_he:'עשביה רב-שנתית נוספת',label_en:'Other perennial weeds',type:'multi_enum',options:'weeds',span2:true}
+      ],derivedPanel:{title_he:'מחושב אוטומטית',rows:[
+        {label_he:'שנים מאז עלקת אחרונה',get:function(s){return s.parameters.weeds_and_disinfection.derived.years_since_orobanche;},fmt:function(v){return v==null?'—':v+' שנים';}}
+      ]}},
+      {title_he:'חיטוי קרקע',fields:[
+        {group:'weeds_and_disinfection',key:'soil_disinfection_done',label_he:'בוצע / מתוכנן חיטוי קרקע',label_en:'Soil disinfection',type:'tri_state',required:true,triggersToggle:true},
+        {group:'weeds_and_disinfection',key:'disinfection_type_code',label_he:'סוג חיטוי (אדיגן / דזומט / סולריזציה)',label_en:'Disinfection type',type:'enum',options:'disinfection_types',cond:function(s){return s.parameters.weeds_and_disinfection.soil_disinfection_done==='YES';}},
+        {group:'weeds_and_disinfection',key:'disinfection_date',label_he:'תאריך חיטוי',label_en:'Disinfection date',type:'date',cond:function(s){return s.parameters.weeds_and_disinfection.soil_disinfection_done==='YES';}}
+      ],derivedPanel:{title_he:'מחושב אוטומטית',rows:[
+        {label_he:'עמידה בהמתנה מחיטוי לששתילה',get:function(s){return s.parameters.weeds_and_disinfection.derived.disinfection_waiting_met;},fmt:fmtBool}
+      ]}}
+    ]},
+  {id:'ops_market',icon:'🚚',title_he:'זן, תפעול ואילוצים',title_en:'Variety, Ops & Constraints',
+    sections:[
+      {title_he:'זן ואורך גידול',fields:[
+        {group:'variety_and_market',key:'variety_id',label_he:'זן תפו"א מתוכנן',label_en:'Planned variety',type:'enum',options:'varieties',required:true},
+        {group:'variety_and_market',key:'growth_period_days',label_he:'אורך עונת גידול הזן',label_en:'Variety growth period',unit:'ימים',type:'decimal',required:true,help:'מספר ימי גידול מתוכננים (למשל: 90, 100, 110 ימים).'},
+        {group:'variety_and_market',key:'has_variety_proximity_limit',label_he:'קיימת מגבלת סמיכות לזנים רגישים בחלקות שרות?',label_en:'Proximity restriction for sensitive varieties',type:'tri_state',required:true,triggersToggle:true,help:'למניעת הדבקת מחלות בין זנים רגישים/שונים בחלקות גובלות.'},
+        {group:'variety_and_market',key:'variety_proximity_notes',label_he:'פירוט מגבלת סמיכות זנים',label_en:'Proximity restriction notes',type:'textarea',span2:true,cond:function(s){return s.parameters.variety_and_market.has_variety_proximity_limit==='YES';}},
+        {group:'variety_and_market',key:'market_destination_code',label_he:'יעד שיווק',label_en:'Market destination',type:'enum',options:'market',required:true},
+        {group:'variety_and_market',key:'tuber_size_target_code',label_he:'גודל פקעת מבוקש',label_en:'Target tuber size',type:'enum',options:'tuber_size',required:true}
+      ]},
+      {title_he:'תפעול וגידולים שכנים',fields:[
+        {group:'operational_and_neighboring',key:'transport_distance_km',label_he:'מרחק הובלה לבית אריזה (ק"מ)',label_en:'Transport distance',unit:'ק"מ',type:'decimal',required:true},
+        {group:'operational_and_neighboring',key:'heavy_truck_access',label_he:'נגישות למשאית כבדה',label_en:'Heavy truck access',type:'tri_state',required:true},
+        {group:'operational_and_neighboring',key:'packing_slot_id',label_he:'חלון/שבוע אסיף מתוכנן בבית האריזה',label_en:'Target harvest window',type:'enum',options:'packing_slots',help:'תזמון עומסים וויסות אסיף בבית האריזה.'},
+        {group:'operational_and_neighboring',key:'neighboring_crop_code',label_he:'גידול שכן גובל בחלקה',label_en:'Neighboring crop',type:'enum',options:'crops'},
+        {group:'operational_and_neighboring',key:'neighbor_season_code',label_he:'עונת הגידול השכן',label_en:'Neighboring season',type:'enum',options:'seasons'},
+        {group:'operational_and_neighboring',key:'planned_planting_date',label_he:'תאריך שתילה משוער',label_en:'Estimated planting date',type:'date',required:true},
+        {group:'operational_and_neighboring',key:'frost_risk_code',label_he:'סיכון כפור באזור',label_en:'Frost risk',type:'enum',options:'level3'},
+        {group:'operational_and_neighboring',key:'heat_stress_risk_code',label_he:'סיכון מכת חום',label_en:'Heat stress risk',type:'enum',options:'level3'}
+      ],derivedPanel:{title_he:'מחושב אוטומטית',rows:[
+        {label_he:'קונפליקט עונות שכן (אביב מול סתיו)',get:function(s){return s.parameters.operational_and_neighboring.derived.season_conflict_flag;},fmt:function(v){return v===true?'⚠ קונפליקט עונות':(v===false?'✓ תקין':'—');}}
+      ]}},
+      {title_he:'אילוצים חיצוניים ופוליטיים',fields:[
+        {group:'external_constraints',key:'has_external_constraint',label_he:'קיים אילוץ חיצוני / פוליטי',label_en:'External / Political constraint',type:'tri_state',required:true,triggersToggle:true},
+        {group:'external_constraints',key:'organic_buffer_zone',label_he:'רצועת חיץ אורגנית',label_en:'Organic buffer zone',type:'tri_state',cond:function(s){return s.parameters.external_constraints.has_external_constraint==='YES';}},
+        {group:'external_constraints',key:'security_restriction_zone',label_he:'אזור מוגבל ביטחונית',label_en:'Security restriction zone',type:'tri_state',cond:function(s){return s.parameters.external_constraints.has_external_constraint==='YES';}},
+        {group:'external_constraints',key:'constraint_description',label_he:'פירוט אילוצי הקצאה חיצוניים/פוליטיים',label_en:'Constraint description',type:'textarea',span2:true,cond:function(s){return s.parameters.external_constraints.has_external_constraint==='YES';}}
+      ]}
+    ]},
+  {id:'review',icon:'✅',title_he:'סיכום הקצאה',title_en:'Allocation Review',review:true}
+];
+
+function fmtBool(v){if(v===null||v===undefined)return '—';return v?'✓ כן':'✗ לא';}
+
+function recomputeAllDerived(){
+  var cr=state.parameters.crop_rotation;
+  var y=cr.last_solanaceae_year?Number(cr.last_solanaceae_year):null;
+  var currentYear=new Date().getFullYear();
+  cr.derived.years_since_solanaceae=y?currentYear-y:null;
+  cr.derived.rotation_requirement_met=y?(currentYear-y)>=BUSINESS_RULES.ROTATION_MIN_YEARS:null;
+  
+  var sf=state.parameters.soil_and_field;
+  var soilMatch=null;
+  if(sf.soil_texture_code&&sf.planting_season_code){
+    var allowed=BUSINESS_RULES.SOIL_SEASON_COMPATIBILITY[sf.soil_texture_code]||[];
+    soilMatch=allowed.indexOf(sf.planting_season_code)!==-1;
+  }
+  sf.derived.soil_season_match=soilMatch;
+
+  var wd=state.parameters.weeds_and_disinfection;
+  var oy=wd.last_orobanche_year?Number(wd.last_orobanche_year):null;
+  wd.derived.years_since_orobanche=oy?currentYear-oy:null;
+  
+  var waitingMet=null;
+  var plantDate=state.parameters.operational_and_neighboring.planned_planting_date;
+  if(wd.soil_disinfection_done==='YES'&&wd.disinfection_date&&wd.disinfection_type_code&&plantDate){
+    var days=BUSINESS_RULES.DISINFECTION_WAITING_DAYS[wd.disinfection_type_code];
+    if(days!=null){var diff=(new Date(plantDate)-new Date(wd.disinfection_date))/86400000;waitingMet=diff>=days;}
+  }
+  wd.derived.disinfection_waiting_met=waitingMet;
+
+  var op=state.parameters.operational_and_neighboring;
+  var seasonConflict=null;
+  if(sf.planting_season_code&&op.neighbor_season_code){
+    if((sf.planting_season_code==='SPRING'&&op.neighbor_season_code==='AUTUMN')||(sf.planting_season_code==='AUTUMN'&&op.neighbor_season_code==='SPRING')){
+      seasonConflict=true;
+    } else {
+      seasonConflict=false;
+    }
+  }
+  op.derived.season_conflict_flag=seasonConflict;
+}
+
+function getVal(field){
+  if(field.top){
+    var parts=field.path.split('.');
+    var o=state;
+    for(var i=0;i<parts.length;i++){if(!o) return ''; o=o[parts[i]];}
+    return o;
+  }
+  return state.parameters[field.group][field.key];
+}
+function setVal(field,value){
+  if(field.top){
+    var parts=field.path.split('.');
+    var o=state;
+    for(var i=0;i<parts.length-1;i++)o=o[parts[i]];
+    o[parts[parts.length-1]]=value;
+  } else {
+    state.parameters[field.group][field.key]=value;
+  }
+}
+
+function handleChange(field, value){
+  setVal(field, value);
+  recomputeAllDerived();
+  scheduleAutosave();
+  
+  if(field.triggersToggle || field.cond){
+    renderStep(false);
+  } else {
+    updateDerivedPanelsInPlace();
+    renderProgressBarOnly();
+  }
+}
+
+function updateDerivedPanelsInPlace(){
+  try {
+    var stepObj=STEPS[currentStep];
+    if(!stepObj || !stepObj.sections) return;
+    var panels = document.querySelectorAll('.derived-panel');
+    var panelIdx = 0;
+    for(var s=0; s<stepObj.sections.length; s++){
+      var sec = stepObj.sections[s];
+      if(sec.derivedPanel && panels[panelIdx]){
+        var rows = panels[panelIdx].querySelectorAll('.derived-row .v');
+        for(var r=0; r<sec.derivedPanel.rows.length; r++){
+          var rowObj = sec.derivedPanel.rows[r];
+          if(rows[r]){
+            var val = rowObj.get(state);
+            rows[r].className = 'v ' + (val===true?'yes':(val===false?'no':'pending'));
+            rows[r].textContent = rowObj.fmt(val);
+          }
+        }
+        panelIdx++;
+      }
+    }
+  } catch(e) {
+    console.error("Derived update error:", e);
+  }
+}
+
+function toggleMultiEnum(field,code){
+  var arr=getVal(field);
+  if(!Array.isArray(arr)) arr=[];
+  var i=arr.indexOf(code);
+  if(i===-1)arr.push(code);else arr.splice(i,1);
+  recomputeAllDerived();
+  renderStep(false);
+  scheduleAutosave();
+}
+
+function addDisease(){state.parameters.soil_diseases.push({disease_type_code:'',severity_code:'',last_tested_date:'',notes:''});renderStep(false);scheduleAutosave();}
+function removeDisease(i){state.parameters.soil_diseases.splice(i,1);renderStep(false);scheduleAutosave();}
+function setDiseaseField(i,key,value){state.parameters.soil_diseases[i][key]=value;scheduleAutosave();}
+
+var FIELDMAP={};
+function tagFields(){
+  FIELDMAP={};
+  var idc=0;
+  for(var i=0; i<STEPS.length; i++){
+    var st = STEPS[i];
+    if(!st.sections) continue;
+    for(var j=0; j<st.sections.length; j++){
+      var sec = st.sections[j];
+      if(!sec.fields) continue;
+      for(var k=0; k<sec.fields.length; k++){
+        var f = sec.fields[k];
+        f.__id = 'f' + (idc++);
+        FIELDMAP[f.__id] = f;
+      }
+    }
+  }
+}
+tagFields();
+
+function optHtml(list,current){
+  return '<option value="">— לבחור —</option>'+list.map(function(item){
+    var code=item[0],he=item[1],en=item[2];
+    return '<option value="'+code+'" '+(current===code?'selected':'')+'>'+he+' ('+en+')</option>';
+  }).join('');
+}
+function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+
+function fieldLabel(field){
+  return '<label class="lbl">'+field.label_he+(field.required?'<span class="req">*</span>':'')+'<span class="en">'+(field.label_en||'')+'</span></label>'+(field.help?'<div class="help">'+field.help+'</div>':'');
+}
+function renderFieldInput(field){
+  var val=getVal(field);
+  if(val===null || val===undefined) val='';
+  var onch=function(v){return "handleChange(FIELDMAP['"+field.__id+"'],"+v+")";};
+  var html='';
+  switch(field.type){
+    case 'text':html='<input type="text" id="inp_'+field.__id+'" value="'+escapeHtml(val)+'" oninput="'+onch('this.value')+'">';break;
+    case 'textarea':html='<textarea id="inp_'+field.__id+'" oninput="'+onch('this.value')+'">'+escapeHtml(val)+'</textarea>';break;
+    case 'year':html='<input type="number" id="inp_'+field.__id+'" step="1" min="1900" max="'+new Date().getFullYear()+'" value="'+val+'" oninput="'+onch('this.value')+'">';break;
+    case 'decimal':
+      html='<input type="number" id="inp_'+field.__id+'" step="any" min="'+(field.min!==undefined?field.min:0)+'" '+(field.max!=null?'max="'+field.max+'"':'')+' value="'+val+'" oninput="'+onch('this.value')+'"><span class="unit">'+(field.unit||'')+'</span>';
+      if(field.group==='soil_and_field'&&field.key==='slope_percent'&&val&&Number(val)>BUSINESS_RULES.SLOPE_WARNING_PERCENT)
+        html+='<div class="warning-inline">⚠ שיפוע חד (>'+BUSINESS_RULES.SLOPE_WARNING_PERCENT+'%)</div>';
+      break;
+    case 'date':html='<input type="date" id="inp_'+field.__id+'" value="'+val+'" onchange="'+onch('this.value')+'">';break;
+    case 'enum':html='<select id="inp_'+field.__id+'" onchange="'+onch('this.value')+'">'+optHtml(ENUMS[field.options],val)+'</select>';break;
+    case 'multi_enum':
+      var arrVal = Array.isArray(val) ? val : [];
+      html='<div class="chips">'+ENUMS[field.options].map(function(item){
+        var code=item[0],he=item[1];
+        return '<button type="button" class="chip '+(arrVal.indexOf(code)!==-1?'on':'')+'" onclick="toggleMultiEnum(FIELDMAP[\''+field.__id+'\'],\''+code+'\')">'+he+'</button>';
+      }).join('')+'</div>';
+      break;
+    case 'tri_state':
+      var tl={YES:'כן',NO:'לא',UNKNOWN:'לא ידוע'};
+      html='<div class="tri">'+['YES','NO','UNKNOWN'].map(function(o){
+        return '<button type="button" class="'+(val===o?'on':'')+' '+(o==='UNKNOWN'?'unknown':'')+'" onclick="'+onch("'"+o+"'")+'">'+tl[o]+'</button>';
+      }).join('')+'</div>';
+      break;
+  }
+  return html;
+}
+
+function renderProgressBarOnly(){
+  var answered=countAnsweredRequired(),total=countTotalRequired();
+  var pct=total?Math.round(answered/total*100):0;
+  document.getElementById('progressFill').style.width=pct+'%';
+  document.getElementById('progressLabel').textContent='שלב '+(currentStep+1)+' מתוך '+STEPS.length+' · '+answered+'/'+total+' שדות חובה ('+pct+'%)';
+}
+
+function renderTabbar(isStepChange){
+  document.getElementById('tabbar').innerHTML=STEPS.map(function(st,i){
+    return '<button class="tab-btn '+(i===currentStep?'active':'')+' '+(i<currentStep?'done':'')+'" onclick="goStep('+i+')"><span class="icon">'+st.icon+'</span><span class="lbl">'+st.title_he+'</span></button>';
+  }).join('');
+  renderProgressBarOnly();
+
+  if(isStepChange){
+    var activeTab=document.querySelector('.tab-btn.active');
+    if(activeTab && activeTab.scrollIntoView){
+      try{ activeTab.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'}); }catch(e){}
+    }
+  }
+}
+
+function renderDiseaseCard(rec, i){
+  var diseaseOpt = optHtml(ENUMS.diseases, rec.disease_type_code);
+  var severityOpt = optHtml(ENUMS.severity, rec.severity_code);
+  var dateVal = rec.last_tested_date || "";
+  var notesVal = escapeHtml(rec.notes || "");
+  
+  var html = '<div class="disease-card">';
+  html += '<div class="row-top"><b>ממצא ' + (i+1) + '</b><button class="remove" onclick="removeDisease(' + i + ')">הסרה</button></div>';
+  html += '<div class="field-grid">';
+  html += '<div class="field"><label class="lbl">מחלה / פטריה<span class="en">Disease</span></label><select onchange="setDiseaseField(' + i + ', &quot;disease_type_code&quot;, this.value)">' + diseaseOpt + '</select></div>';
+  html += '<div class="field"><label class="lbl">רמת חומרה<span class="en">Severity</span></label><select onchange="setDiseaseField(' + i + ', &quot;severity_code&quot;, this.value)">' + severityOpt + '</select></div>';
+  html += '<div class="field"><label class="lbl">תאריך זיהוי / בדיקה<span class="en">Test date</span></label><input type="date" value="' + dateVal + '" onchange="setDiseaseField(' + i + ', &quot;last_tested_date&quot;, this.value)"></div>';
+  html += '<div class="field span2"><label class="lbl">הערות<span class="en">Notes</span></label><textarea onchange="setDiseaseField(' + i + ', &quot;notes&quot;, this.value)">' + notesVal + '</textarea></div>';
+  html += '</div></div>';
+  return html;
+}
+
+
+function renderStep(isStepChange){
+  var activeId = document.activeElement ? document.activeElement.id : null;
+  var st = STEPS[currentStep];
+  var body = document.getElementById('step-body');
+  if(!body || !st) return;
+  
+  var html = '<h2>' + st.icon + ' ' + st.title_he + '<span class="en">' + st.title_en + '</span></h2>';
+  if(st.review){
+    html += renderReview();
+  } else {
+    for(var i=0; i<st.sections.length; i++){
+      html += renderSection(st.sections[i]);
+    }
+  }
+  body.innerHTML = html;
+  
+  var btnBack = document.getElementById('btnBack');
+  var btnNext = document.getElementById('btnNext');
+  if(btnBack) btnBack.disabled = (currentStep === 0);
+  if(btnNext) btnNext.style.visibility = (currentStep === STEPS.length - 1 ? 'hidden' : 'visible');
+  
+  renderTabbar(isStepChange);
+
+  if(activeId){
+    var el = document.getElementById(activeId);
+    if(el && el.focus) {
+      try { el.focus(); } catch(e){}
+    }
+  }
+}
+
+function renderSection(sec){
+  var html='<div class="section"><h3>'+sec.title_he+'</h3>';
+  if(sec.repeatable){
+    var list=state.parameters[sec.repeatable]||[];
+    html+=list.map(function(rec,i){ return renderDiseaseCard(rec, i); }).join('')+'<button class="add-disease" onclick="addDisease()">+ הוספת ממצא מחלת קרקע</button>';
+  } else {
+    html+='<div class="field-grid">'+sec.fields.filter(function(f){ return !f.cond || f.cond(state); }).map(function(f){
+      return '<div class="field '+(f.span2?'span2':'')+'">'+fieldLabel(f)+renderFieldInput(f)+'</div>';
+    }).join('')+'</div>';
+  }
+  if(sec.derivedPanel){
+    html+='<div class="derived-panel"><h4>'+sec.derivedPanel.title_he+'</h4>'+sec.derivedPanel.rows.map(function(r){
+      var v=r.get(state);
+      var cls=v===true?'yes':(v===false?'no':'pending');
+      return '<div class="derived-row"><span>'+r.label_he+'</span><span class="v '+cls+'">'+r.fmt(v)+'</span></div>';
+    }).join('')+'</div>';
+  }
+  html+='</div>';
+  return html;
+}
+
+function allFields(){
+  var out=[];
+  for(var i=0; i<STEPS.length; i++){
+    var st = STEPS[i];
+    if(!st.sections) continue;
+    for(var j=0; j<st.sections.length; j++){
+      var sec = st.sections[j];
+      if(sec.fields){
+        for(var k=0; k<sec.fields.length; k++){
+          out.push(sec.fields[k]);
+        }
+      }
+    }
+  }
+  return out;
+}
+function countTotalRequired(){return allFields().filter(function(f){return f.required;}).length;}
+function countAnsweredRequired(){return allFields().filter(function(f){return f.required&&(!f.cond||f.cond(state));}).filter(function(f){var v=getVal(f);return v!==''&&v!=null;}).length;}
+function countMissingRequired(){return allFields().filter(function(f){return f.required&&(!f.cond||f.cond(state));}).filter(function(f){var v=getVal(f);return v===''||v==null;}).map(function(f){return f.label_he;});}
+
+function resolveEnumCode(enumName,code){
+  if(!code||!ENUMS[enumName])return code||'—';
+  var found=null;
+  ENUMS[enumName].forEach(function(item){ if(item[0]===code) found=item; });
+  return found?found[1]:code;
+}
+function resolveValue(field,rawValue){
+  if(rawValue===''||rawValue==null)return '—';
+  if(field.type==='enum'&&field.options&&ENUMS[field.options]){
+    var found=null;
+    ENUMS[field.options].forEach(function(item){ if(item[0]===rawValue) found=item; });
+    return found?found[1]:rawValue;
+  }
+  if(field.type==='multi_enum'&&Array.isArray(rawValue)){
+    if(rawValue.length===0)return '—';
+    return rawValue.map(function(code){
+      var found=null;
+      if(ENUMS[field.options]) ENUMS[field.options].forEach(function(item){ if(item[0]===code) found=item; });
+      return found?found[1]:code;
+    }).join(', ');
+  }
+  if(field.type==='tri_state')return {YES:'כן',NO:'לא',UNKNOWN:'לא ידוע'}[rawValue]||rawValue;
+  if(field.unit)return rawValue+' '+field.unit;
+  return String(rawValue);
+}
+
+function renderReview(){
+  var html='';
+  for(var s=0; s<STEPS.length; s++){
+    var st = STEPS[s];
+    if(st.review || !st.sections) continue;
+    html += '<div class="review-group"><h3>' + st.icon + ' ' + st.title_he + '</h3>';
+    for(var j=0; j<st.sections.length; j++){
+      var sec = st.sections[j];
+      html += '<h4 style="font-size:12.5px;color:var(--ink-faint);margin:10px 0 2px;">' + sec.title_he + '</h4><table class="review-table">';
+      if(sec.repeatable){
+        var list = state.parameters[sec.repeatable] || [];
+        if(list.length === 0){
+          html += '<tr><td colspan="2">לא נרשמו מחלות קרקע</td></tr>';
+        } else {
+          for(var m=0; m<list.length; m++){
+            var rec = list[m];
+            var disease = resolveEnumCode('diseases', rec.disease_type_code);
+            var severity = resolveEnumCode('severity', rec.severity_code);
+            html += '<tr><td>ממצא ' + (m+1) + '</td><td>' + disease + ' · ' + severity + ' · ' + (rec.last_tested_date||'—') + '</td></tr>';
+          }
+        }
+      } else if(sec.fields){
+        for(var k=0; k<sec.fields.length; k++){
+          var f = sec.fields[k];
+          if(f.cond && !f.cond(state)) continue;
+          var val = getVal(f);
+          var resolved = resolveValue(f, val);
+          html += '<tr><td>' + f.label_he + '</td><td>' + escapeHtml(resolved) + '</td></tr>';
+        }
+      }
+      html += '</table>';
+    }
+    html += '</div>';
+  }
+
+  html += '<div class="review-group"><h3>📐 בדיקות מודל הקצאה (אוטומטי)</h3><table class="review-table">' +
+    '<tr><td>שנים מאז סולניים אחרון</td><td>' + (state.parameters.crop_rotation.derived.years_since_solanaceae!=null?state.parameters.crop_rotation.derived.years_since_solanaceae:'—') + '</td></tr>' +
+    '<tr><td>עמידה במחזור (≥ 4 שנים)</td><td>' + fmtBool(state.parameters.crop_rotation.derived.rotation_requirement_met) + '</td></tr>' +
+    '<tr><td>התאמת מרקם קרקע לעונה</td><td>' + fmtBool(state.parameters.soil_and_field.derived.soil_season_match) + '</td></tr>' +
+    '<tr><td>שנים מאז עלקת אחרונה</td><td>' + (state.parameters.weeds_and_disinfection.derived.years_since_orobanche!=null?state.parameters.weeds_and_disinfection.derived.years_since_orobanche:'—') + '</td></tr>' +
+    '<tr><td>עמידה בהמתנה מחיטוי לששתילה</td><td>' + fmtBool(state.parameters.weeds_and_disinfection.derived.disinfection_waiting_met) + '</td></tr>' +
+    '<tr><td>קונפליקט עונות שכן</td><td>' + (state.parameters.operational_and_neighboring.derived.season_conflict_flag===true?'⚠ קונפליקט (אביב מול סתיו)':(state.parameters.operational_and_neighboring.derived.season_conflict_flag===false?'✓ תקין':'—')) + '</td></tr>' +
+  '</table></div>';
+
+  var missing = countMissingRequired();
+  if(missing.length){ html += '<div class="missing">⚠ ' + missing.length + ' שדות חובה ריקים: ' + missing.join(', ') + '</div>'; }
+  return html;
+}
+
+function goStep(i){
+  if(i<0||i>=STEPS.length)return;
+  currentStep=i;
+  renderStep(true);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function buildExport(){recomputeAllDerived();return JSON.stringify(state,null,2);}
+function saveJson(){
+  try {
+    var json=buildExport();var blob=new Blob([json],{type:'application/json'});var url=URL.createObjectURL(blob);
+    var a=document.createElement('a');a.href=url;a.download='potato-plot-allocation-'+(state.plot_id||'draft')+'.json';
+    document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);showToast('קובץ JSON נשמר בהצלחה');
+  } catch(e) {
+    showToast('שגיאה בשמירת הקובץ');
+  }
+}
+
+/* AUTOMATED EMAIL SENDING TO torzt@post.bgu.ac.il */
+function emailJson(){
+  saveJson();
+  setTimeout(function(){ exportCsv(); }, 400);
+
+  var growerName = state.grower.name || 'לא צוין';
+  var farmName = state.grower.farm_name || 'לא צוין';
+  var plotId = state.plot_id || 'ללא מזהה';
+  var plotArea = state.plot_area_dunam ? (state.plot_area_dunam + ' דונם') : '—';
+  var variety = resolveEnumCode('varieties', state.parameters.variety_and_market.variety_id);
+  var season = resolveEnumCode('seasons', state.parameters.soil_and_field.planting_season_code);
+
+  var subject = encodeURIComponent('נתוני הקצאת חלקת תפו"א — חלקה ' + plotId + ' (' + farmName + ')');
+  
+  var bodyText = [
+    'שלום,',
+    '',
+    'להלן סיכום נתוני הקצאת חלקת תפו"א מתוך אפליקציית האיסוף בשדה:',
+    '----------------------------------------------------',
+    '• מגדל: ' + growerName,
+    '• משק / ישוב: ' + farmName,
+    '• מזהה חלקה: ' + plotId,
+    '• שטח להקצאה: ' + plotArea,
+    '• זן מתוכנן: ' + variety,
+    '• עונת שתילה: ' + season,
+    '• תאריך שתילה משוער: ' + (state.parameters.operational_and_neighboring.planned_planting_date || '—'),
+    '----------------------------------------------------',
+    'תוצאות בדיקות מודל ההקצאה (מחושב):',
+    '- עמידה במחזור זרעים: ' + fmtBool(state.parameters.crop_rotation.derived.rotation_requirement_met) + ' (' + (state.parameters.crop_rotation.derived.years_since_solanaceae!=null?state.parameters.crop_rotation.derived.years_since_solanaceae:'—') + ' שנים מאז סולניים)',
+    '- התאמת קרקע לעונה: ' + fmtBool(state.parameters.soil_and_field.derived.soil_season_match),
+    '- עמידה בהמתנה לחיטוי: ' + fmtBool(state.parameters.weeds_and_disinfection.derived.disinfection_waiting_met),
+    '----------------------------------------------------',
+    '',
+    '* קובצי הנתונים (JSON ו-Excel CSV) ירדו למכשירך אוטומטית. אנא צרף אותם להודעה זו לפני השליחה.'
+  ].join('\n');
+
+  showToast('מוריד קבצים ופותח את אפליקציית המייל...');
+  setTimeout(function(){
+    window.location.href = 'mailto:' + RECIPIENT_EMAIL + '?subject=' + subject + '&body=' + encodeURIComponent(bodyText);
+  }, 800);
+}
+
+function importJson(event){
+  var file=event.target.files[0];if(!file)return;
+  var reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      var imported=JSON.parse(e.target.result);
+      state=deepMerge(freshState(),imported);
+      recomputeAllDerived();currentStep=0;renderStep(true);scheduleAutosave();
+      showToast('הנתונים יובאו מ-'+file.name);
+    }catch(err){showToast('שגיאה בקריאת הקובץ — יש לוודא JSON תקין');}
+  };
+  reader.readAsText(file);event.target.value='';
+}
+
+function deepMerge(target,source){
+  var out=Object.assign({}, target);
+  for(var key in source){
+    if(source.hasOwnProperty(key)){
+      if(source[key]&&typeof source[key]==='object'&&!Array.isArray(source[key])&&target[key]&&typeof target[key]==='object'&&!Array.isArray(target[key])){
+        out[key]=deepMerge(target[key],source[key]);
+      } else {
+        out[key]=source[key];
+      }
+    }
+  }
+  return out;
+}
+
+function exportCsv(){
+  try {
+    recomputeAllDerived();
+    var rows=[['שדה (Field Key)','תווית (Label)','ערך (Value)']];
+    for(var s=0; s<STEPS.length; s++){
+      var st = STEPS[s];
+      if(st.review || !st.sections) continue;
+      for(var j=0; j<st.sections.length; j++){
+        var sec = st.sections[j];
+        if(sec.fields){
+          for(var k=0; k<sec.fields.length; k++){
+            var f = sec.fields[k];
+            var val = getVal(f);
+            var resolved = resolveValue(f, val);
+            var key = f.top ? f.path : (f.group + '.' + f.key);
+            rows.push([key, f.label_he, resolved]);
+          }
+        }
+        if(sec.repeatable){
+          var list = state.parameters[sec.repeatable] || [];
+          for(var m=0; m<list.length; m++){
+            var rec = list[m];
+            rows.push(['soil_diseases[' + m + '].disease', 'מחלת קרקע ' + (m+1), resolveEnumCode('diseases', rec.disease_type_code)]);
+            rows.push(['soil_diseases[' + m + '].severity', 'חומרה ' + (m+1), resolveEnumCode('severity', rec.severity_code)]);
+            rows.push(['soil_diseases[' + m + '].date', 'תאריך ' + (m+1), rec.last_tested_date || '—']);
+          }
+        }
+      }
+    }
+    rows.push(['derived.years_since_solanaceae','שנים מאז סולניים',state.parameters.crop_rotation.derived.years_since_solanaceae!=null?state.parameters.crop_rotation.derived.years_since_solanaceae:'—']);
+    rows.push(['derived.rotation_met','עמידה במחזור',state.parameters.crop_rotation.derived.rotation_requirement_met===null?'—':(state.parameters.crop_rotation.derived.rotation_requirement_met?'כן':'לא')]);
+    rows.push(['derived.soil_season_match','התאמת קרקע לעונה',state.parameters.soil_and_field.derived.soil_season_match===null?'—':(state.parameters.soil_and_field.derived.soil_season_match?'כן':'לא')]);
+    rows.push(['derived.disinfection_waiting_met','המתנה לחיטוי',state.parameters.weeds_and_disinfection.derived.disinfection_waiting_met===null?'—':(state.parameters.weeds_and_disinfection.derived.disinfection_waiting_met?'כן':'לא')]);
+    rows.push(['derived.season_conflict','קונפליקט עונות שכן',state.parameters.operational_and_neighboring.derived.season_conflict_flag===true?'קונפליקט':(state.parameters.operational_and_neighboring.derived.season_conflict_flag===false?'תקין':'—')]);
+    var csv = rows.map(function(r){ return r.map(function(c){ return '"' + String(c).replace(/"/g,'""') + '"'; }).join(','); }).join('\n');
+    var blob = new Blob(['\uFEFF' + csv], {type:'text/csv;charset=utf-8;'});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a'); a.href = url; a.download = 'potato-plot-allocation-' + (state.plot_id||'draft') + '.csv';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+    showToast('קובץ לאקסל ירד בהצלחה');
+  } catch(e) {
+    showToast('שגיאה ביצוא לאקסל');
+  }
+}
+
+function showToast(msg){
+  var t=document.getElementById('toast');
+  if(!t) return;
+  t.textContent=msg;
+  t.classList.add('show');
+  clearTimeout(showToast._h);
+  showToast._h=setTimeout(function(){ t.classList.remove('show'); }, 2600);
+}
+
+var DRAFT_KEY='potato_plot_allocation_draft_v43';
+var autosaveTimer=null;
+function scheduleAutosave(){clearTimeout(autosaveTimer);var el=document.getElementById('autosaveIndicator');if(el)el.textContent='שומר טיוטה…';autosaveTimer=setTimeout(doAutosave,800);}
+function doAutosave(){
+  try{
+    var json=JSON.stringify(state);
+    if(window.storage){window.storage.set(DRAFT_KEY,json,false);}
+    else{localStorage.setItem(DRAFT_KEY,json);}
+    var el=document.getElementById('autosaveIndicator');
+    if(el) el.textContent='הטיוטה נשמרה ✓ '+new Date().toLocaleTimeString('he-IL', {hour:'2-digit',minute:'2-digit'});
+  }catch(e){
+    try{localStorage.setItem(DRAFT_KEY,JSON.stringify(state));var el2=document.getElementById('autosaveIndicator');if(el2)el2.textContent='נשמר מקומית ✓ '+new Date().toLocaleTimeString('he-IL', {hour:'2-digit',minute:'2-digit'});}
+    catch(e2){var el3=document.getElementById('autosaveIndicator');if(el3)el3.textContent='שמירה נכשלה';}
+  }
+}
+
+function initApp(){
+  try {
+    recomputeAllDerived();
+  } catch(e1) {
+    console.error("Recompute error:", e1);
+  }
+  
+  try {
+    renderStep(true);
+  } catch(e2) {
+    console.error("Render step error stack:", e2 ? (e2.stack || str(e2)) : "Unknown");
+  }
+
+  try {
+    var draftJson = null;
+    if(typeof localStorage !== 'undefined' && localStorage !== null){
+      draftJson = localStorage.getItem(DRAFT_KEY);
+      if(draftJson){
+        state = deepMerge(freshState(), JSON.parse(draftJson));
+        recomputeAllDerived();
+        renderStep(true);
+      }
+    }
+  } catch(e3) {
+    console.error("Draft load error:", e3);
+  }
+}
+
+
+(function(){
+  var ua = navigator.userAgent || '';
+  var isEmbedded = /FBAN|FBAV|Instagram|WhatsApp|Line|Snapchat|MicroMessenger/i.test(ua) || (window.navigator.standalone === false);
+  if (isEmbedded) {
+    var el = document.getElementById('viewerNotice');
+    if (el) el.style.display = 'block';
+  }
+})();
+
+initApp();
+</script>
+</body>
+</html>
