@@ -233,6 +233,17 @@
   </div>
 </footer>
 
+
+<div id="newPlotModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:2000;padding:20px;">
+  <div style="max-width:380px;margin:80px auto;background:#fff;border-radius:14px;padding:22px 18px;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,0.25);">
+    <div style="font-size:36px;margin-bottom:8px;">🌾</div>
+    <h3 style="margin:0 0 8px;color:#2d5a27;font-size:18px;">הנתונים נשלחו בהצלחה!</h3>
+    <p style="color:#4b5563;font-size:14px;margin-bottom:18px;line-height:1.4;">האם ברצונך להזין חלקה נוספת עבור המגדל <strong id="modalGrowerName"></strong>?</p>
+    <button class="btn primary" style="width:100%;padding:12px;font-size:14px;background:#2d5a27;margin-bottom:8px;font-weight:700;" onclick="closeNewPlotModal();newPlotSameGrower();">➕ פתיחת חלקה חדשה למגדל זה</button>
+    <button class="btn ghost" style="width:100%;padding:10px;font-size:13px;" onclick="closeNewPlotModal();">סגירה</button>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -817,6 +828,20 @@ function saveJson(){
 
 /* AUTOMATED EMAIL SENDING TO torzt@post.bgu.ac.il */
 
+
+function showNewPlotModal(){
+  var el = document.getElementById('newPlotModal');
+  var nameEl = document.getElementById('modalGrowerName');
+  if(nameEl) nameEl.textContent = state.grower.name || 'מגדל זה';
+  if(el) el.style.display = 'block';
+}
+
+function closeNewPlotModal(){
+  var el = document.getElementById('newPlotModal');
+  if(el) el.style.display = 'none';
+}
+
+
 function newPlotSameGrower(){
   var g = Object.assign({}, state.grower);
   state = freshState();
@@ -859,7 +884,7 @@ function emailJson(){
     '* קובצי הנתונים (JSON ו-Excel CSV) ירדו למכשירך אוטומטית. אנא צרף אותם להודעה זו לפני השליחה.'
   ].join('\n');
   
-  showToast('הקבצים ירדו למכשירך! פותח את אפליקציית המייל...');
+  showToast('הקבצים ירדו למכשירך! פותח את אפליקציית המייל...'); setTimeout(showNewPlotModal, 1500);
   
   setTimeout(function(){
     window.location.href = 'mailto:' + RECIPIENT_EMAIL + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(bodyText);
