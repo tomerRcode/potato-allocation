@@ -222,11 +222,13 @@
     </div>
     <div class="bar-row-actions">
       <button class="btn primary email-btn" style="background:#2d5a27;color:#fff;font-weight:700;" onclick="emailJson()">✉ שליחה במייל (torzt@post.bgu.ac.il)</button>
+      <button class="btn ghost" style="background:#eef6ed;color:#1e4620;border-color:#bbf7d0;font-weight:600;" onclick="newPlotSameGrower()">➕ חלקה חדשה (למגדל זה)</button>
       <button class="btn ghost" onclick="doAutosave()">💾 שמירה</button>
       <button class="btn ghost" onclick="exportCsv()">📊 ייצוא לאקסל (CSV)</button>
-      <button class="btn ghost" onclick="exportJson()">📄 ייצוא קובץ JSON</button>
+      <button class="btn ghost" onclick="exportJson()">📄 ייצוא JSON</button>
       <input type="file" id="importFile" accept=".json" style="display:none" onchange="importJson(event)">
       <button class="btn ghost" onclick="document.getElementById('importFile').click()">📂 טעינת JSON</button>
+      <button class="btn ghost" style="color:#991b1b;" onclick="resetEntireForm()">🗑️ איפוס מלא</button>
     </div>
   </div>
 </footer>
@@ -814,6 +816,30 @@ function saveJson(){
 }
 
 /* AUTOMATED EMAIL SENDING TO torzt@post.bgu.ac.il */
+
+function newPlotSameGrower(){
+  var g = Object.assign({}, state.grower);
+  state = freshState();
+  state.grower = g;
+  recomputeAllDerived();
+  currentStep = 0;
+  renderStep(true);
+  scheduleAutosave();
+  showToast('חלקה חדשה נפתחה! פרטי המגדל נשמרו ✓');
+}
+
+function resetEntireForm(){
+  if(confirm('האם אתה בטוח שברצונך לאפס את הטופס לחלוטין?')){
+    state = freshState();
+    recomputeAllDerived();
+    currentStep = 0;
+    renderStep(true);
+    scheduleAutosave();
+    showToast('הטופס אופס לחלוטין');
+  }
+}
+
+
 function emailJson(){
   recomputeAllDerived();
   
