@@ -816,38 +816,28 @@ function saveJson(){
 /* AUTOMATED EMAIL SENDING TO torzt@post.bgu.ac.il */
 function emailJson(){
   recomputeAllDerived();
-  showToast('שולח נתונים במייל ל-torzt@post.bgu.ac.il...');
   
   var plotId = state.plot_id || 'טרם הוזן';
   var growerName = state.grower.name || 'טרם הוזן';
   
-  var payload = {
-    access_key: "c8c4a161-0428-48be-8178-654cb6c5c1cb",
-    to: RECIPIENT_EMAIL,
-    subject: 'נתוני הקצאת חלקה תפו"א — ' + plotId + ' (' + growerName + ')',
-    from_name: 'מערכת הקצאת חלקות תפו"א',
-    message: [
-      'שם מגדל: ' + growerName,
-      'מזהה חלקה: ' + plotId
-    ].join('\n')
-  };
-
-  fetch('https://api.web3forms.com/submit', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-    body: JSON.stringify(payload)
-  }).then(function(res){ return res.json(); }).then(function(data){
-    if(data.success){
-      showToast('הנתונים נשלחו בהצלחה למייל! ✓');
-    } else {
-      fallbackMailto(payload);
-    }
-  })['catch'](function(err){
-    fallbackMailto(payload);
-  });
-  
+  // 1. Download both JSON and CSV files automatically
   try { exportCsv(); } catch(e){}
   try { setTimeout(exportJson, 400); } catch(e){}
+  
+  // 2. Prepare pre-filled mailto text containing strictly Farmer Name & Plot ID + attach instruction
+  var subject = 'נתוני הקצאת חלקה תפו"א — ' + plotId + ' (' + growerName + ')';
+  var bodyText = [
+    'שם מגדל: ' + growerName,
+    'מזהה חלקה: ' + plotId,
+    '',
+    '* קובצי הנתונים (JSON ו-Excel CSV) ירדו למכשירך אוטומטית. אנא צרף אותם להודעה זו לפני השליחה.'
+  ].join('\n');
+  
+  showToast('הקבצים ירדו למכשירך! פותח את אפליקציית המייל...');
+  
+  setTimeout(function(){
+    window.location.href = 'mailto:' + RECIPIENT_EMAIL + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(bodyText);
+  }, 800);
 }
 
 function fallbackMailto(payload){
